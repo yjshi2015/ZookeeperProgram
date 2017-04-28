@@ -26,6 +26,7 @@ public class Zookeeper_GetChildren_API_Sync implements Watcher{
 				new Zookeeper_GetChildren_API_Sync());
 		connectedSemaphore.await();
 		
+		//只有持久节点才能创建子节点
 		zk.create(path, "".getBytes(),
 				Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
 		zk.create(path + "/c1", "".getBytes(), 
