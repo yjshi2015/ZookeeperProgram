@@ -1,4 +1,4 @@
-package com.zookeeper;
+package com.zookeeper.javaapi;
 
 import java.util.concurrent.CountDownLatch;
 
