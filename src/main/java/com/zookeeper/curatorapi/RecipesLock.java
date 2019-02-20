@@ -16,28 +16,38 @@ import java.util.concurrent.CountDownLatch;
 public class RecipesLock {
 
     static CountDownLatch latch = new CountDownLatch(1);
-    static String path = "/curator_recipes_lock_path";
+    static String path = "/zk/syj/ok";
     static CuratorFramework client = CuratorFrameworkFactory.builder()
             .connectString("127.0.0.1:2181")
-            .sessionTimeoutMs(3000)
-            .retryPolicy(new ExponentialBackoffRetry(1000, 3))
+            .sessionTimeoutMs(300)
+            .retryPolicy(new ExponentialBackoffRetry(100, 2))
             .build();
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception{
         client.start();
+        System.out.println("data:" + new String(client.getData().forPath(path)));
         final InterProcessMutex lock = new InterProcessMutex(client, path);
         for (int i=0; i<10; i++) {
             new Thread(new Runnable() {
                 public void run() {
+                    long begin=0;
                     try {
                         latch.await();
+                        begin = System.currentTimeMillis();
                         lock.acquire();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss|SSS");
-                    String orderNo = sdf.format(new Date());
-                    System.out.println(orderNo);
+                    try {
+                        //模拟业务处理
+                        Thread.sleep(1000);
+                        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss|SSS");
+                        String orderNo = sdf.format(new Date());
+                        long end = System.currentTimeMillis();
+                        System.out.println("耗时：" + (end-begin)/1000 + " s，orderNO:" + orderNo);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     try {
                         lock.release();
                     } catch (Exception e) {
